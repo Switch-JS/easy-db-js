@@ -1,0 +1,27 @@
+{
+  "name": "easy-db",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Goofo/easy-db.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Goofo/easy-db/issues"
+  },
+  "homepage": "https://github.com/Goofo/easy-db#readme",
+  "dependencies": {
+    "generic-pool": "^3.4.2",
+    "mocha": "^5.2.0",
+    "mongodb": "^3.1.0",
+    "redis": "^2.8.0",
+    "should": "^13.2.1"
+  }
+}

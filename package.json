@@ -1,22 +1,25 @@
 {
-  "name": "easy-db",
-  "version": "1.0.0",
+  "name": "easy-db-js",
+  "version": "1.0.1",
   "description": "",
   "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Goofo/easy-db.git"
+    "url": "git+https://github.com/Switch-JS/easy-db-js.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "switch.nodejs",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Goofo/easy-db/issues"
+    "url": "https://github.com/Switch-JS/easy-db-js/issues"
   },
-  "homepage": "https://github.com/Goofo/easy-db#readme",
+  "homepage": "https://github.com/Switch-JS/easy-db-js#readme",
   "dependencies": {
     "generic-pool": "^3.4.2",
     "mocha": "^5.2.0",

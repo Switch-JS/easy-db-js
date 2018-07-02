@@ -10,7 +10,7 @@ const redis = require("redis");
 class Pool {
     constructor(uri) {
         console.log('create redis pool from %s', uri);
-        this.options = url.parse(uri || 'redis://127.0.0.1:6379/0');
+        this.options = url.parse(uri);
 
         this.rw = generic.createPool({
             create: function () {

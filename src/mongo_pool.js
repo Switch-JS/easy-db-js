@@ -10,13 +10,14 @@ const mongodb = require("mongodb");
 
 class Pool {
     constructor(uri) {
-        this.options = url.parse(uri || 'redis://127.0.0.1:6379/0');
-
+        this.options = url.parse(uri);
         this.rw = generic.createPool({
             create: function () {
-                return util.promisify(mongodb.connect)(url.format(this.options), {autoReconnect: true});
+                console.log("create mongodb connection %j", url.format(this.options));
+                return util.promisify(mongodb.connect)(url.format(this.options));
             }.bind(this),
             destroy: function (c) {
+                console.log('close mongo connection!');
                 c.close();
             }
         }, {min: 1, max: 16});
@@ -29,10 +30,11 @@ class Pool {
             return;
         }
         const client = await this.rw.acquire();
-        await job(client).catch(err => {
-            console.error("mongodb exec command failed by %s", err.message || err);
+        const res = await job(client).catch(err => {
+            console.error("mongodb command failed by %s", err.message || err);
         });
         this.rw.release(client);
+        return res;
     }
 }
 

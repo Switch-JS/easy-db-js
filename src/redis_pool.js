@@ -81,6 +81,41 @@ class Pool {
         }
         return this.command(...args);
     }
+
+    async incrby(key, value, rate = 1, floor = 0) {
+        const r = await this.command('INCRBY', key, value * rate);
+        if (r < floor) {
+            await this.command('INCRBY', key, -value * rate);
+            return 0;
+        }
+        return r;
+    }
+
+    async hincrby(key, json, rate = 1, floor = undefined) {
+        let changed = {};
+        let values = {};
+        let failed = false;
+        for (let i in json) {
+            let v = parseInt(json[i]);
+            v = isNaN(v) ? 0 : Math.ceil(v * rate);
+            const r = await this.command('HINCRBY', key, i, v);
+            changed[i] = v;
+            values[i] = r;
+
+            const min = typeof floor === 'object' ? floor[i] : floor;
+            if (typeof min !== 'undefined' && r < min) {
+                failed = true;
+                break;
+            }
+        }
+        if (failed) {
+            for (let i in changed) {
+                await this.command('HINCRBY', key, i, 0 - changed[i]);
+            }
+            return undefined;
+        }
+        return {changed, values};
+    }
 }
 
 module.exports = Pool;

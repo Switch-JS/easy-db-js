@@ -79,7 +79,13 @@ class Pool {
         for (let i in obj) {
             args.push(i, typeof obj[i] === 'object' ? JSON.stringify(obj[i]) : obj[i].toString());
         }
-        return this.command(...args);
+        return await this.command(...args);
+    }
+
+    async hmget() {
+        const args = [].slice.call(arguments);
+        const key = args.shift();
+        return await this.command(...['HMGET', key].concat(args));
     }
 
     async incrby(key, value, rate = 1, floor = 0) {

@@ -15,7 +15,7 @@
   },
   "keywords": [],
   "author": "switch.nodejs",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/Switch-JS/easy-db-js/issues"
   },

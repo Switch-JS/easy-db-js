@@ -1,5 +1,6 @@
 'use strict';
 const mongodb = require("mongodb");
+const logger = require("log4js").getLogger('easy-db');
 
 class Collection {
     constructor(name) {
@@ -20,7 +21,7 @@ class Hash {
         const h = new Hash(id);
         if (!!id) {
             await h.$resolve().catch(err => {
-                console.error('Collection object resolve failed %s', err.message || err);
+                logger.error('Collection object resolve failed %s', err.message || err);
             });
         }
         return h;
@@ -28,7 +29,7 @@ class Hash {
 
     async $resolve() {
         if (this.$resolved) {
-            console.error("hash object $resolved %s", this.$resolved);
+            logger.error("hash object $resolved %s", this.$resolved);
             return;
         }
         const data = await $redis.command('HGETALL', this.$id);
@@ -182,7 +183,7 @@ class LArray extends Array {
     static async $resolve(id) {
         const l = new LArray(id);
         await l.$resolve().catch(err => {
-            console.error('Collection object resolve failed %s', err.message || err);
+            logger.error('Collection object resolve failed %s', err.message || err);
         });
         return l;
     }

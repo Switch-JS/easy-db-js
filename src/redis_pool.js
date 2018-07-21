@@ -6,10 +6,11 @@ const url = require("url");
 
 const redis = require("redis");
 
+const logger = require("log4js").getLogger('redis');
 
 class Pool {
     constructor(uri) {
-        console.log('create redis pool from %s', uri);
+        logger.debug('create redis pool from %s', uri);
         this.options = url.parse(uri);
 
         this.rw = generic.createPool({
@@ -25,12 +26,12 @@ class Pool {
     }
 
     _connect2master(cb) {
-        console.log('connect 2 redis server %s', url.format(this.options));
+        logger.debug('connect 2 redis server %s', url.format(this.options));
         const c = redis.createClient(url.format(this.options));
         c.on('error', cb);
         c.on('ready', () => {
             if (c.server_info.role === 'master') {
-                console.log('connected 2 redis server %s', url.format(this.options));
+                logger.debug('connected 2 redis server %s', url.format(this.options));
                 return cb(null, c);
             }
             c.quit();
@@ -48,12 +49,12 @@ class Pool {
         const cmd = args.shift();
         if (!client || !cmd || typeof client[cmd] !== 'function') {
             this.rw.release(client);
-            console.error('redis command failed by %s', cmd);
+            logger.error('redis command failed by %s', cmd);
             return;
         }
-        console.log('<= %s  %j', cmd, args);
+        logger.debug('<= %s  %j', cmd, args);
         let result = await util.promisify(client[cmd].bind(client))(...args).catch((err) => {
-            console.error("redis command [%s => %j] failed by %s", cmd, args, err.message || err);
+            logger.error("redis command [%s => %j] failed by %s", cmd, args, err.message || err);
         });
         this.rw.release(client);
         if (typeof result === 'object') {
@@ -70,7 +71,7 @@ class Pool {
             } catch (_) {
             }
         }
-        console.log("=> %s %j", cmd, result);
+        logger.debug("=> %s %j", cmd, result);
         return result;
     };
 

@@ -254,6 +254,41 @@ class LArray extends Array {
         return this;
     }
 
+    async $set(index, value) {
+        if (!this.$resolved) {
+            await this.$resolve();
+        }
+        if (!this[index]) {
+            return;
+        }
+        if (this[index] instanceof Hash || this[index] instanceof LArray) {
+            await this[index].$release(this.$id);
+        }
+        if (typeof value === 'object') {
+            if (value instanceof Array) {
+                if (!(value instanceof LArray)) {
+                    const a = new LArray();
+                    await a.$push(...value);
+                    value = a;
+                }
+            } else {
+                if (!(value instanceof Hash)) {
+                    const o = new Hash();
+                    await o.$mset(value);
+                    value = o;
+                }
+            }
+        }
+
+        if (value instanceof Hash || value instanceof LArray) {
+            await value.$referenceof(this.$id);
+            await $redis.command('LSET', this.$id, index, value.$ref);
+        } else {
+            await $redis.command('LSET', this.$id, index, value);
+        }
+        return 'ok';
+    }
+
     async $shift() {
         if (!this.$resolved) {
             await this.$resolve();

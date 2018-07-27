@@ -1,6 +1,6 @@
 {
   "name": "easy-db-js",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "",
   "main": "index.js",
   "directories": {
@@ -22,7 +22,7 @@
   "homepage": "https://github.com/Switch-JS/easy-db-js#readme",
   "dependencies": {
     "generic-pool": "^3.4.2",
-    "log4js": "^2.x",
+    "log4js": "^3.0.2",
     "mocha": "^5.2.0",
     "mongodb": "^2.2.35",
     "redis": "^2.8.0",

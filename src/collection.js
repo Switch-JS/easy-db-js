@@ -78,9 +78,32 @@ class Hash {
         if (!this.$resolved) {
             await this.$resolve();
         }
+        const args = ['HMSET', this.$id];
         for (let i in object) {
-            await this.$set(i, object[i]);
+            let v = object[i];
+            if (typeof v === 'object') {
+                if (!(v instanceof Hash) && !(v instanceof LArray)) {
+                    if (v instanceof Array) {
+                        const t = new LArray();
+                        v = await t.$push(...v);
+                    } else {
+                        if (v === null) {
+                            continue;
+                        }
+                        const t = new Hash();
+                        v = await t.$mset(v);
+                    }
+                }
+            }
+            if (v instanceof Hash || v instanceof LArray) {
+                await v.$referenceof(this.$id);
+                args.push(v.$ref);
+            } else {
+                args.push(v);
+            }
+            this[i] = v;
         }
+        await $redis.command(...args);
         return this;
     }
 
@@ -89,48 +112,27 @@ class Hash {
             await this.$resolve();
         }
 
-        if (this[k] && (this[k] instanceof Hash || this[k] instanceof LArray)) {
-            await this[k].$remove(k);
-        }
-
-        if (v && (v instanceof Hash || v instanceof LArray)) {
-            this[k] = await v.$referenceof(this.$id);
-            await $redis.command('HSET', this.$id, k, JSON.stringify(this[k].$ref));
-            return this;
-        }
-
-        if (v && typeof v.type === 'string' && v.id !== 'undefined') {
-            if (v.type === '__hash__') {
-                this[k] = await Hash.$resolve(v.id);
-                await this[k].$referenceof(this.$id);
-                await $redis.command('HSET', this.$id, k, JSON.stringify(this[k].$ref));
-                return this;
-            }
-            if (v.type === '__array__') {
-                this[k] = await LArray.$resolve(v.id);
-                await this[k].$referenceof(this.$id);
-                await $redis.command('HSET', this.$id, k, JSON.stringify(this[k].$ref));
-                return this;
+        if (typeof v === 'object') {
+            if (!(v instanceof Hash) && !(v instanceof LArray)) {
+                if (v instanceof Array) {
+                    const t = new LArray();
+                    v = await t.$push(...v);
+                } else {
+                    if (v === null) {
+                        return this;
+                    }
+                    const t = new Hash();
+                    v = await t.$mset(v);
+                }
             }
         }
-        if (typeof v === 'object' && v !== null) {
-            if (v instanceof Array) {
-                this[k] = new LArray();
-                await this[k].$push(...v);
-                await this[k].$referenceof(this.$id);
-                await $redis.command('HSET', this.$id, k, JSON.stringify(this[k].$ref));
-                return this;
-            }
-
-            this[k] = new Hash();
-            await this[k].$mset(v);
-            await this[k].$referenceof(this.$id);
-            await $redis.command('HSET', this.$id, k, JSON.stringify(this[k].$ref));
-            return this;
-        }
-
         this[k] = v;
-        await $redis.command('HSET', this.$id, k, v);
+
+        if (v instanceof Hash || v instanceof LArray) {
+            await $redis.command('HSET', this.$id, k, v.$ref);
+        } else {
+            await $redis.command('HSET', this.$id, k, v);
+        }
         return this;
     }
 

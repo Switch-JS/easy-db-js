@@ -97,9 +97,9 @@ class Hash {
             }
             if (v instanceof Hash || v instanceof LArray) {
                 await v.$referenceof(this.$id);
-                args.push(JSON.stringify(v.$ref));
+                args.push(i, JSON.stringify(v.$ref));
             } else {
-                args.push(v);
+                args.push(i, v);
             }
             this[i] = v;
         }

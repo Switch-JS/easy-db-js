@@ -314,6 +314,11 @@ class LArray extends Array {
                 await this[i].$release(this.$id);
             }
         }
+
+        const ref = await $redis.command('LLEN', `reference.${this.$id}`);
+        if (ref === 0) {
+            await $redis.command('DEL', this.$id);
+        }
         return this;
     }
 

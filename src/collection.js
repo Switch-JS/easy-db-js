@@ -193,6 +193,9 @@ class LArray extends Array {
     }
 
     async $resolve() {
+        if (this.$resolved) {
+            return this;
+        }
         const data = await $redis.command('LRANGE', this.$id, 0, -1);
         if (data) {
             this.$new = false;
@@ -212,6 +215,7 @@ class LArray extends Array {
             }
         }
         this.$resolved = true;
+        return this;
     }
 
     async $push() {

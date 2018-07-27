@@ -97,7 +97,7 @@ class Hash {
             }
             if (v instanceof Hash || v instanceof LArray) {
                 await v.$referenceof(this.$id);
-                args.push(v.$ref);
+                args.push(JSON.stringify(v.$ref));
             } else {
                 args.push(v);
             }
@@ -129,7 +129,7 @@ class Hash {
         this[k] = v;
 
         if (v instanceof Hash || v instanceof LArray) {
-            await $redis.command('HSET', this.$id, k, v.$ref);
+            await $redis.command('HSET', this.$id, k, JSON.stringify(v.$ref));
         } else {
             await $redis.command('HSET', this.$id, k, v);
         }

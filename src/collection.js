@@ -103,7 +103,9 @@ class Hash {
             }
             this[i] = v;
         }
-        await $redis.command(...args);
+        if (args.length > 2) {
+            await $redis.command(...args);
+        }
         return this;
     }
 

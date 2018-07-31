@@ -123,6 +123,19 @@ class Pool {
         }
         return {changed, values};
     }
+
+    async transaction(tasks) {
+        const client = await this.acquire();
+        await util.promisify(client.MULTI.bind(client))();
+        if (typeof tasks === 'function') {
+            await tasks(client).catch(error => {
+                logger.error("事务函数处理失败 %s", error.message || error);
+                client.DISCARD();
+            });
+        }
+        await util.promisify(client.EXEC.bind(client))();
+        this.release(client);
+    }
 }
 
 module.exports = Pool;

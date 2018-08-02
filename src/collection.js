@@ -227,33 +227,25 @@ class LArray extends Array {
         const cmds = ['LPUSH', this.$id];
         for (let i in args) {
             let obj = args[i];
-            switch (obj.type) {
-                case '__hash__':
-                    obj = await Hash.$resolve(obj.id);
-                    break;
-                case '__array__':
-                    obj = await LArray.$resolve(obj.id);
-                    break;
-                default:
-                    if (typeof obj === 'object') {
-                        if (obj instanceof Array) {
-                            const a = new LArray();
-                            await a.$push(...obj);
-                            obj = a;
-                        } else {
-                            const b = new Hash();
-                            await b.$mset(obj);
-                            obj = b;
-                        }
+            if (!(obj instanceof Hash) && !(obj instanceof LArray)) {
+                if (typeof obj === 'object' && obj !== null) {
+                    if (obj instanceof Array) {
+                        const a = new LArray();
+                        await a.$push(...obj);
+                        obj = a;
+                    } else {
+                        const b = new Hash();
+                        await b.$mset(obj);
+                        obj = b;
                     }
-                    break;
+                }
             }
-
             if (obj instanceof Hash || obj instanceof LArray) {
                 this.push(await obj.$referenceof(this.$id));
                 cmds.push(JSON.stringify(obj.$ref));
                 continue;
             }
+            cmds.push(obj);
             this.push(obj);
         }
         if (cmds.length > 2) {

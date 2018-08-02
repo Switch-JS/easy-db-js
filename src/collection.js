@@ -266,7 +266,8 @@ class LArray extends Array {
         if (!this.$resolved) {
             await this.$resolve();
         }
-        if (!this[index]) {
+        if (typeof this[index] === 'undefined') {
+            logger.warn('can`t set %d to %j by out of range!', index, value);
             return;
         }
         if (this[index] instanceof Hash || this[index] instanceof LArray) {

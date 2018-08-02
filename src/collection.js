@@ -287,6 +287,7 @@ class LArray extends Array {
         } else {
             await $redis.command('LSET', this.$id, index, value);
         }
+        this[index] = value;
         return 'ok';
     }
 

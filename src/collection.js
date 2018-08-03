@@ -143,6 +143,11 @@ class Hash {
         return this;
     }
 
+    async $unreferenceof(id) {
+        await $redis.command('LREM', `reference.${this.$id}`, 0, id);
+        return this;
+    }
+
     async $remove(k) {
         if (!this.$resolved) {
             await this.$resolve();
@@ -298,7 +303,7 @@ class LArray extends Array {
 
         const head = this.shift();
         if (head && (head instanceof Hash || head instanceof LArray)) {
-            await head.$release(this.$id);
+            await head.$unreferenceof(this.$id);
         }
         await $redis.command('LPOP', this.$id);
         return head;
@@ -326,6 +331,11 @@ class LArray extends Array {
 
     async $referenceof(id) {
         await $redis.command('LPUSH', `reference.${this.$id}`, id);
+        return this;
+    }
+
+    async $unreferenceof(id) {
+        await $redis.command('LREM', `reference.${this.$id}`, 0, id);
         return this;
     }
 }

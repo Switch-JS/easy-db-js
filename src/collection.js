@@ -55,7 +55,9 @@ class Hash {
     }
 
     async $incrby(incrs, rate = 1, floor = {}) {
-
+        if (!this.$resolved) {
+            await this.$resolve();
+        }
         const changed = {};
         let success = true;
         for (let i in incrs) {
@@ -101,6 +103,12 @@ class Hash {
             } else {
                 args.push(i, v);
             }
+
+            /// release old ref
+            if (this[i] && (this[i] instanceof Hash || this[i] instanceof LArray)) {
+                await this[i].$release(this.$id);
+            }
+
             this[i] = v;
         }
         if (args.length > 2) {
@@ -113,7 +121,6 @@ class Hash {
         if (!this.$resolved) {
             await this.$resolve();
         }
-
         if (typeof v === 'object') {
             if (!(v instanceof Hash) && !(v instanceof LArray)) {
                 if (v instanceof Array) {
@@ -128,6 +135,12 @@ class Hash {
                 }
             }
         }
+
+        /// release old ref
+        if (this[k] && (this[k] instanceof Hash || this[k] instanceof LArray)) {
+            await this[k].$release(this.$id);
+        }
+
         this[k] = v;
 
         if (v instanceof Hash || v instanceof LArray) {
@@ -152,6 +165,7 @@ class Hash {
         if (!this.$resolved) {
             await this.$resolve();
         }
+
         if (this[k] && (this[k] instanceof Hash || this[k] instanceof LArray)) {
             await this[k].$release(this.$id);
         }
@@ -160,10 +174,6 @@ class Hash {
     }
 
     async $release(id) {
-        if (!this.$resolved) {
-            await this.$resolve();
-        }
-
         if (id) {
             await $redis.command('LREM', `reference.${this.$id}`, 0, id);
         }
@@ -267,9 +277,7 @@ class LArray extends Array {
             logger.warn('can`t set %d to %j by out of range!', index, value);
             return;
         }
-        if (this[index] instanceof Hash || this[index] instanceof LArray) {
-            await this[index].$release(this.$id);
-        }
+
         if (typeof value === 'object') {
             if (value instanceof Array) {
                 if (!(value instanceof LArray)) {
@@ -292,6 +300,10 @@ class LArray extends Array {
         } else {
             await $redis.command('LSET', this.$id, index, value);
         }
+
+        if (this[index] instanceof Hash || this[index] instanceof LArray) {
+            await this[index].$release(this.$id);
+        }
         this[index] = value;
         return 'ok';
     }
@@ -313,9 +325,11 @@ class LArray extends Array {
         if (!this.$resolved) {
             await this.$resolve();
         }
+
         if (id) {
             await $redis.command('LREM', `reference.${this.$id}`, 0, id);
         }
+
         for (let i in this) {
             if (this[i] instanceof Hash || this[i] instanceof LArray) {
                 await this[i].$release(this.$id);

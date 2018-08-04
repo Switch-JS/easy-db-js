@@ -101,7 +101,9 @@ class Hash {
                 await v.$referenceof(this.$id);
                 args.push(i, JSON.stringify(v.$ref));
             } else {
-                args.push(i, v);
+                if (typeof v !== 'undefined') {
+                    args.push(i, v);
+                }
             }
 
             /// release old ref
@@ -146,7 +148,9 @@ class Hash {
         if (v instanceof Hash || v instanceof LArray) {
             await $redis.command('HSET', this.$id, k, JSON.stringify(v.$ref));
         } else {
-            await $redis.command('HSET', this.$id, k, v);
+            if (typeof v !== "undefined") {
+                await $redis.command('HSET', this.$id, k, v);
+            }
         }
         return this;
     }
@@ -169,7 +173,9 @@ class Hash {
         if (this[k] && (this[k] instanceof Hash || this[k] instanceof LArray)) {
             await this[k].$release(this.$id);
         }
-        delete this[k];
+        if (this[k]) {
+            delete this[k];
+        }
         return this;
     }
 
